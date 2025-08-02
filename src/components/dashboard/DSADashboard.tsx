@@ -15,9 +15,11 @@ import { BookOpen, LogOut } from "lucide-react";
 export const DSADashboard = () => {
   const [categories, setCategories] = useState(dsaData);
   const [activeTab, setActiveTab] = useState("problems");
-  // CHANGED: Added local state for revision map to prevent blinking
+  // FIXED: Added local state for revision and notes maps to prevent blinking during database operations
   const [localRevisionMap, setLocalRevisionMap] = useState<Record<string, boolean>>({});
   const [localNotesMap, setLocalNotesMap] = useState<Record<string, string>>({});
+  // FIXED: Added loading state to prevent initial render blinking
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const { toast } = useToast();
   const { user, signOut } = useAuth();
   
@@ -28,9 +30,10 @@ export const DSADashboard = () => {
   );
   const updateProgress = useMutation(api.progress.updateProgress);
 
-  // Load progress from Convex on mount
+  // FIXED: Load progress from Convex on mount with proper loading state management
   useEffect(() => {
     if (progressData) {
+      // FIXED: Only update state once data is loaded to prevent blinking
       setCategories(prevCategories =>
         prevCategories.map(category => ({
           ...category,
@@ -40,12 +43,38 @@ export const DSADashboard = () => {
           }))
         }))
       );
-      // CHANGED: Update local state with server data
+      // FIXED: Update local state with server data and mark loading as complete
       setLocalRevisionMap(progressData.revision || {});
       setLocalNotesMap(progressData.notes || {});
+      setIsInitialLoading(false);
     }
   }, [progressData]);
 
+  // FIXED: Show loading state instead of empty/blinking content during initial load
+  if (isInitialLoading && !progressData) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Animated background pattern */}
+        <div className="fixed inset-0 opacity-30">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
+          <div className="absolute top-0 left-0 w-full h-full">
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
+            <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+          </div>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <h2 className="text-2xl font-bold text-foreground">Loading DSA Dashboard</h2>
+              <p className="text-muted-foreground">Setting up your progress tracking...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const handleProblemToggle = async (categoryName: string, problemId: number) => {
     if (!user) return;
     
@@ -56,7 +85,7 @@ export const DSADashboard = () => {
     const currentCompleted = categories.find(c => c.name === categoryName)?.problems.find(p => p.id === problemId)?.completed || false;
     const newCompleted = !currentCompleted;
     
-    // CHANGED: Update UI state immediately to prevent blinking
+    // FIXED: Update UI state immediately to prevent blinking during database operations
     setCategories(prevCategories =>
       prevCategories.map(category => 
         category.name === categoryName 
@@ -72,7 +101,7 @@ export const DSADashboard = () => {
       )
     );
     
-    // Show toast notification immediately
+    // FIXED: Show toast notification immediately for better UX
     const problemTitle = categories.find(c => c.name === categoryName)?.problems.find(p => p.id === problemId)?.question || "Problem";
     toast({
       title: newCompleted ? "Problem Completed! 🎉" : "Progress Updated",
@@ -90,7 +119,7 @@ export const DSADashboard = () => {
       });
     } catch (error) {
       console.error('Error updating progress:', error);
-      // CHANGED: Revert UI state on error
+      // FIXED: Revert UI state on error to maintain consistency
       setCategories(prevCategories =>
         prevCategories.map(category => 
           category.name === categoryName 
@@ -109,7 +138,7 @@ export const DSADashboard = () => {
     }
   };
 
-  // CHANGED: Added handler for immediate revision state updates
+  // FIXED: Added handler for immediate revision state updates to prevent blinking
   const handleRevisionToggle = (problemKey: string, marked: boolean) => {
     setLocalRevisionMap(prev => ({
       ...prev,
@@ -117,7 +146,7 @@ export const DSADashboard = () => {
     }));
   };
 
-  // CHANGED: Added handler for immediate notes state updates
+  // FIXED: Added handler for immediate notes state updates to prevent blinking
   const handleNotesUpdate = (problemKey: string, notes: string) => {
     setLocalNotesMap(prev => ({
       ...prev,
@@ -130,10 +159,10 @@ export const DSADashboard = () => {
     sum + cat.problems.filter(p => p.completed).length, 0
   );
 
-  // CHANGED: Use local state instead of server state to prevent blinking
+  // FIXED: Use local state instead of server state to prevent blinking
   const revisionMap = localRevisionMap;
   const notesMap = localNotesMap;
-  // CHANGED: Check if there are any problems marked for revision
+  // FIXED: Check if there are any problems marked for revision
   const hasRevisionProblems = Object.values(revisionMap).some(marked => marked);
 
   return (

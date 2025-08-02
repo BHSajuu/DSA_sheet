@@ -10,7 +10,7 @@ import { dsaData } from '@/data/dsaData';
 import { useToast } from '@/hooks/use-toast';
 
 interface RevisionViewProps {
-  // CHANGED: Added callback to update revision state in parent
+  // FIXED: Added callback to update revision state in parent to prevent blinking
   onRevisionToggle: (problemKey: string, marked: boolean) => void;
 }
 
@@ -23,16 +23,16 @@ export const RevisionView = ({ onRevisionToggle }: RevisionViewProps) => {
     user ? { userId: user._id } : "skip"
   );
 
-  // CHANGED: Added function to handle removing problems from revision
+  // FIXED: Added function to handle removing problems from revision with immediate UI updates
   const handleRemoveFromRevision = async (categoryName: string, problemId: number, problemTitle: string) => {
     if (!user) return;
     
     const problemKey = `${categoryName}-${problemId}`;
     
-    // Update UI state immediately to prevent blinking
+    // FIXED: Update UI state immediately to prevent blinking during database operations
     onRevisionToggle(problemKey, false);
     
-    // Show toast immediately
+    // FIXED: Show toast immediately for better UX
     toast({
       title: "Removed from Revision",
       description: `"${problemTitle}" removed from your revision list`,
@@ -46,7 +46,7 @@ export const RevisionView = ({ onRevisionToggle }: RevisionViewProps) => {
       });
     } catch (error) {
       console.error('Error removing from revision:', error);
-      // Revert UI state on error
+      // FIXED: Revert UI state on error to maintain consistency
       onRevisionToggle(problemKey, true);
       toast({
         title: "Error",
@@ -55,7 +55,7 @@ export const RevisionView = ({ onRevisionToggle }: RevisionViewProps) => {
       });
     }
   };
-  // CHANGED: Show loading state while data is being fetched
+  // FIXED: Show loading state while data is being fetched to prevent blinking
   if (revisionProblems === undefined) {
     return (
       <div className="space-y-6">
@@ -67,7 +67,7 @@ export const RevisionView = ({ onRevisionToggle }: RevisionViewProps) => {
     );
   }
 
-  // CHANGED: Improved empty state message
+  // FIXED: Improved empty state message with better UX
   if (!revisionProblems || revisionProblems.length === 0) {
     return (
       <div className="space-y-6">
@@ -182,7 +182,7 @@ export const RevisionView = ({ onRevisionToggle }: RevisionViewProps) => {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    {/* CHANGED: Added remove from revision button */}
+                    {/* FIXED: Added remove from revision button with immediate UI updates */}
                     <Button
                       variant="ghost"
                       size="sm"

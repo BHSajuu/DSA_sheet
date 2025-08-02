@@ -35,16 +35,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const userQuery = useQuery(api.auth.getUserByEmail, email ? { email } : "skip");
 
   useEffect(() => {
-    // Check for stored email on mount
+    // FIXED: Check for stored email on mount with proper loading state management
     const storedEmail = localStorage.getItem('userEmail');
     if (storedEmail) {
       setEmail(storedEmail);
     } else {
+      // FIXED: Set loading to false immediately if no stored email to prevent unnecessary loading state
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // FIXED: Only update user state when query data is available to prevent blinking
     if (userQuery !== undefined) {
       setUser(userQuery);
       setIsLoading(false);

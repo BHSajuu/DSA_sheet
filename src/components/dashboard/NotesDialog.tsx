@@ -21,7 +21,7 @@ interface NotesDialogProps {
   problemKey: string;
   problemTitle: string;
   initialNotes: string;
-  // CHANGED: Added callback to update notes state immediately
+  // FIXED: Added callback to update notes state immediately to prevent blinking
   onNotesUpdate?: (problemKey: string, notes: string) => void;
 }
 
@@ -48,12 +48,12 @@ export const NotesDialog: React.FC<NotesDialogProps> = ({
 
     setIsLoading(true);
     
-    // CHANGED: Update parent state immediately to prevent blinking
+    // FIXED: Update parent state immediately to prevent blinking during database operations
     if (onNotesUpdate) {
       onNotesUpdate(problemKey, notes.trim());
     }
     
-    // CHANGED: Show success toast immediately
+    // FIXED: Show success toast immediately for better UX
     toast({
       title: "Notes Saved! 📝",
       description: "Your notes have been saved successfully.",
@@ -69,7 +69,7 @@ export const NotesDialog: React.FC<NotesDialogProps> = ({
       });
     } catch (error) {
       console.error('Error saving notes:', error);
-      // CHANGED: Revert state on error if callback provided
+      // FIXED: Revert state on error if callback provided to maintain consistency
       if (onNotesUpdate) {
         onNotesUpdate(problemKey, initialNotes);
       }

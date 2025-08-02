@@ -45,15 +45,16 @@ export const DashboardHeader = ({ totalProblems, completedProblems, categories }
                 strokeDasharray={`${completionPercentage * 2.51} 251`}
                 strokeLinecap="round"
                 className="transition-all duration-1000 ease-out animate-progress"
-                style={{
+              className="transition-all duration-1000 ease-out"
                   filter: 'drop-shadow(0 0 8px hsl(var(--primary) / 0.5))'
                 }}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
+          {/* FIXED: Added smooth transition for percentage display to prevent number jumping */}
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">{completionPercentage}%</div>
-                <div className="text-xs text-muted-foreground">Complete</div>
+              <div className="text-2xl font-bold text-primary transition-all duration-500">{completionPercentage}%</div>
               </div>
             </div>
           </div>

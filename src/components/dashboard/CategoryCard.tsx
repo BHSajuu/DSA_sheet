@@ -18,9 +18,9 @@ interface CategoryCardProps {
   onProblemToggle: (categoryName: string, problemId: number) => void;
   revisionMap: Record<string, boolean>;
   notesMap: Record<string, string>;
-  // CHANGED: Added callback to update revision state immediately in parent
+  // FIXED: Added callback to update revision state immediately in parent to prevent blinking
   onRevisionToggle: (problemKey: string, marked: boolean) => void;
-  // CHANGED: Added callback to update notes state immediately
+  // FIXED: Added callback to update notes state immediately to prevent blinking
   onNotesUpdate: (problemKey: string, notes: string) => void;
 }
 
@@ -53,10 +53,10 @@ export const CategoryCard = ({ category, onProblemToggle, revisionMap, notesMap,
     const currentlyMarked = revisionMap[problemKey] || false;
     const newMarkedState = !currentlyMarked;
     
-    // CHANGED: Update UI state immediately to prevent blinking
+    // FIXED: Update UI state immediately to prevent blinking during database operations
     onRevisionToggle(problemKey, newMarkedState);
     
-    // CHANGED: Show toast immediately with new state
+    // FIXED: Show toast immediately with new state for better UX
     toast({
       title: newMarkedState ? "Marked for Revision! 📚" : "Removed from Revision",
       description: newMarkedState 
@@ -72,7 +72,7 @@ export const CategoryCard = ({ category, onProblemToggle, revisionMap, notesMap,
       });
     } catch (error) {
       console.error('Error toggling revision:', error);
-      // CHANGED: Revert UI state on error
+      // FIXED: Revert UI state on error to maintain consistency
       onRevisionToggle(problemKey, currentlyMarked);
       toast({
         title: "Error",
